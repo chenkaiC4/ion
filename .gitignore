@@ -16,3 +16,9 @@ other
 ./ion
 ./islb
 
+deps/
+default.etcd
+*.rdb
+.vscode
+*.out
+*package-lock.json
