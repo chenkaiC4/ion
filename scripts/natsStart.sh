@@ -1,13 +1,14 @@
 #!/bin/bash
 
 APP_DIR=$(cd `dirname $0`/../; pwd)
+
 cd $APP_DIR
 OS_TYPE=""
 . $APP_DIR/scripts/common
 
 mkdir -p $APP_DIR/logs
 EXE=nats-server
-COMMAND=$EXE
+COMMAND=$APP_DIR/deps/linux/nats-server/$EXE
 #CONFIG=$APP_DIR/configs/
 PID_FILE=$APP_DIR/configs/nats-server.pid
 LOG_FILE=$APP_DIR/logs/nats-server.log

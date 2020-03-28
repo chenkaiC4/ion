@@ -1,13 +1,65 @@
 #!/bin/bash
-APP_DIR=$(cd `dirname $0`/../;pwd)
+
+APP_DIR=$(cd `dirname $0`/../; pwd)
+
+cd $APP_DIR
 OS_TYPE=""
 . $APP_DIR/scripts/common
 
+mkdir -p $APP_DIR/logs
+EXE=redis-server
+COMMAND=$APP_DIR/deps/linux/redis-server/$EXE
+#CONFIG=$APP_DIR/configs/
+PID_FILE=$APP_DIR/configs/redis-server.pid
+LOG_FILE=$APP_DIR/logs/redis-server.log
 
-if [[ "$OS_TYPE" =~ "Darwin" ]];then
-    brew services start redis
-else
-    sudo systemctl start redis
+help()
+{
+    echo ""
+    echo "start script"
+    echo "Usage: ./redisStart.sh [-h]"
+    echo ""
+}
+
+while getopts "h" arg
+do
+    case $arg in
+        h)
+            help;
+            exit 0
+            ;;
+        ?)
+            echo "No argument needed. Ignore them all!"
+            ;;
+    esac
+done
+
+
+count=`ps -ef |grep " $COMMAND " |grep -v "grep" |wc -l`
+if [ 0 != $count ];then
+    ps aux | grep " $COMMAND " | grep -v "grep"
+    echo "already start"
+    exit 1;
 fi
 
-echo "start redis ok!"
+# if [ ! -r $CONFIG ]; then
+    # echo "$CONFIG not exsist"
+    # exit 1;
+# fi
+if [[ "$OS_TYPE" =~ "Darwin" ]];then
+    brew services start redis-server
+else
+    ## run command
+    echo "nohup $COMMAND >>$LOG_FILE 2>&1 &"
+    nohup $COMMAND >>$LOG_FILE 2>&1 &
+    pid=$!
+    echo "$pid"
+    echo "$pid" > $PID_FILE
+    rpid=`ps aux | grep $pid |grep -v "grep" | awk '{print $2}'`
+    if [[ $pid != $rpid ]];then
+        echo "start failly. $pid $rpid"
+        # rm  $PID_FILE
+        exit 1
+    fi
+fi
+
